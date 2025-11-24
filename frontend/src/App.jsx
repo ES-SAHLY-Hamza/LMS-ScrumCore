@@ -7,6 +7,9 @@ import Home from "./components/Home";
 import '../src/App.css'
 import MesDemandes from "./components/MesDemandes";
 import ManagerDemandes from "./components/ManagerDemandes";
+import RhValidations from "./components/RhValidations";
+
+
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -33,6 +36,8 @@ function App() {
             <Route path="/formations" element={<FormationsCatalogue />} />
             <Route path="/mes-demandes" element={<MesDemandes />} />
             <Route path="/manager-demandes" element={<ManagerDemandes />} />
+            <Route path="/rh-validations" element={<RhValidations />} />
+
             {/* Toute autre route → accueil */}
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>

@@ -1,5 +1,6 @@
 from django.urls import path
-from collaborateurs.views import CollaborateurMockView, DemandesManagerView, MesDemandesView, formations_list, LoginMockView, DemanderFormationView,ManagerValidationView
+from collaborateurs.views import CollaborateurMockView, DemandesManagerView, MesDemandesView, formations_list, LoginMockView, DemanderFormationView,ManagerValidationView, DemandesRHView, RHValidationView
+from django.urls import path, include
 
 urlpatterns = [
     path('collaborateurs/', CollaborateurMockView.as_view(), name='collaborateurs-mock'),
@@ -14,4 +15,9 @@ urlpatterns = [
     path('mes-demandes/', MesDemandesView.as_view(), name='mes-demandes'),
     path('manager/demandes/', DemandesManagerView.as_view(), name='demandes-manager'),
     path('manager/demandes/valider/', ManagerValidationView.as_view(), name='demandes-valider'),
+
+
+    path('rh/demandes/', DemandesRHView.as_view(), name='demandes-rh'),
+    path('rh/demandes/valider/', RHValidationView.as_view(), name='demandes-rh-valider'),
+    #path('api/', include('collaborateurs.urls')),
 ]

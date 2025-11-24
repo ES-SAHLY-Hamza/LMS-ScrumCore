@@ -366,3 +366,61 @@ class ManagerValidationView(APIView):
                 return Response({"message": f"Demande {action} avec succès"})
 
         return Response({"error": "Demande introuvable"}, status=404)
+
+
+class DemandesRHView(APIView):
+    def get(self, request):
+        user_id = request.headers.get("Collaborateur-Id")
+        if not user_id:
+            return Response({"error": "Collaborateur-Id requis"}, status=403)
+
+        user = get_user_from_request(request)
+        if not user or user["role"] != "RH":
+            return Response({"error": "Accès refusé - RH seulement"}, status=403)
+
+        return Response({"demandes": DEMANDES})
+
+
+class RHValidationView(APIView):
+    def post(self, request):
+        user_id = request.headers.get("Collaborateur-Id")
+        if not user_id:
+            return Response({"error": "Collaborateur-Id requis"}, status=403)
+
+        user = get_user_from_request(request)
+        if not user or user["role"] != "RH":
+            return Response({"error": "Accès refusé - RH seulement"}, status=403)
+
+        data = request.data
+        demande_id = data.get("demande_id")
+        action = data.get("action")  # "valider" ou "refuser"
+
+        if not demande_id or action not in ["valider", "refuser"]:
+            return Response({"error": "Paramètres invalides"}, status=400)
+
+        # On cherche la demande
+        for demande in DEMANDES:
+
+            # On récupère les valeurs de manière sécurisée
+            price = demande.get("price", 0) or 0
+            certifiante = demande.get("certifiante", False)
+            statut = demande.get("statut", "")
+
+            # Si la demande correspond à celle que RH veut traiter
+            if demande.get("id") == demande_id:
+
+                # Règle : si certifiante ou prix > 0 ⇒ manager doit valider avant
+                if (price > 0 or certifiante) and statut != "Validée par le Manager":
+                    return Response({
+                        "error": "Le manager doit valider d’abord cette formation"
+                    }, status=403)
+
+                # Tout est OK → RH traite
+                if action == "valider":
+                    demande["statut"] = "Validée par le RH"
+                else:
+                    demande["statut"] = "Refusée par le RH"
+
+                return Response({"message": f"Demande {action} avec succès"})
+
+        return Response({"error": "Demande introuvable"}, status=404)
