@@ -1,0 +1,15 @@
+# Python
+venv/
+__pycache__/
+
+# Django
+*.pyc
+
+# Node
+node_modules/
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
