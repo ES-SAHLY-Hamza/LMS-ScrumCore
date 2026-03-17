@@ -270,7 +270,7 @@ class DemanderFormationView(APIView):
             statut = "Validée"
             message = "Formation gratuite validée automatiquement !"
         elif formation["certified"]:
-            statut = "En attente d’approbation"
+            statut = "En attente d’approbation Manager & RH"
             message = "Demande envoyée → Manager puis RH (formation certifiante payante)"
         else:
             statut = "En attente d’approbation"
@@ -381,6 +381,7 @@ class DemandesRHView(APIView):
         return Response({"demandes": DEMANDES})
 
 
+
 class RHValidationView(APIView):
     def post(self, request):
         user_id = request.headers.get("Collaborateur-Id")
@@ -398,26 +399,25 @@ class RHValidationView(APIView):
         if not demande_id or action not in ["valider", "refuser"]:
             return Response({"error": "Paramètres invalides"}, status=400)
 
-        # On cherche la demande
         for demande in DEMANDES:
-
-            # On récupère les valeurs de manière sécurisée
-            price = demande.get("price", 0) or 0
+            price = demande.get("prix", 0)
             certifiante = demande.get("certifiante", False)
             statut = demande.get("statut", "")
 
-            # Si la demande correspond à celle que RH veut traiter
             if demande.get("id") == demande_id:
-
-                # Règle : si certifiante ou prix > 0 ⇒ manager doit valider avant
-                if (price > 0 or certifiante) and statut != "Validée par le Manager":
+                # Vérifier que le manager a validé avant
+                if (price > 0 or certifiante) and "Validée par le Manager" not in statut:
                     return Response({
                         "error": "Le manager doit valider d’abord cette formation"
                     }, status=403)
 
-                # Tout est OK → RH traite
+                # Validation ou refus RH
                 if action == "valider":
-                    demande["statut"] = "Validée par le RH"
+                    # Conserver le statut manager et ajouter RH
+                    if "Validée par le Manager" in statut:
+                        demande["statut"] = "Validée par le Manager et le RH"
+                    else:
+                        demande["statut"] = "Validée par le RH"
                 else:
                     demande["statut"] = "Refusée par le RH"
 

@@ -19,13 +19,12 @@ function RhValidations() {
       .then((data) => {
         // 🔥 Ne garder QUE les formations payantes + certifiantes
         const filtered = (data.demandes || []).filter(
-          d => d.prix > 0 && d.certifiante === true
+          (d) => d.prix > 0 && d.certifiante === true
         );
 
         setDemandes(filtered);
       });
   }, []);
-
 
   // ============================
   // 🔴 Traiter une demande RH
@@ -46,7 +45,6 @@ function RhValidations() {
     })
       .then((res) => res.json())
       .then((data) => {
-        // 👉 Afficher la notification
         if (data.error) {
           setNotification(data.error);
         } else {
@@ -56,7 +54,7 @@ function RhValidations() {
               : "Demande refusée ❌"
           );
 
-          // 👉 Retirer la ligne du tableau
+          // Supprimer la demande validée/refusée du tableau
           setDemandes((prev) => prev.filter((d) => d.id !== id));
         }
       });
@@ -89,38 +87,28 @@ function RhValidations() {
             {demandes.map((d) => (
               <tr key={d.id}>
                 <td>{d.collaborateur}</td>
-
                 <td>
                   <strong>{d.formation}</strong>
                 </td>
-
-                {/* Prix */}
-                <td className={d.prix === 0 ? 'prix-gratuit' : ''}>
+                <td className={d.prix === 0 ? "prix-gratuit" : ""}>
                   {d.prix === 0 ? "Gratuite" : `${d.prix} €`}
                 </td>
-
-                {/* Certifiante */}
                 <td className={d.certifiante ? "certif-oui" : "certif-non"}>
                   {d.certifiante ? "Oui" : "Non"}
                 </td>
-
-                {/* Statut du manager */}
                 <td>
-                  {d.statut === "Validée par le Manager" ? (
+                  {d.statut.includes("Manager") ? (
                     <span className="badge-manager-ok">✔ Manager validé</span>
                   ) : (
                     <span className="badge-manager-wait">En attente</span>
                   )}
                 </td>
-
-                {/* Actions RH */}
                 <td>
                   <div className="actions-cell">
                     <button
                       className="btn-validate"
                       disabled={
-                        (d.certifiante || d.price > 0) &&
-                        d.statut !== "Validée par le Manager"
+                        (d.certifiante || d.prix > 0) && !d.statut.includes("Manager")
                       }
                       onClick={() => traiterDemande(d.id, "valider")}
                     >
@@ -151,4 +139,3 @@ function RhValidations() {
 }
 
 export default RhValidations;
-
